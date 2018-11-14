@@ -7,13 +7,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/go-franky/keys"
 )
 
 type awsKeyManager struct {
 	once      sync.Once
-	sm        *secretsmanager.SecretsManager
-	secretID  string
+	sm        secretsmanageriface.SecretsManagerAPI
+	secretID  *string
 	localData map[string]string
 }
 
@@ -34,7 +35,8 @@ func (km *awsKeyManager) Set(k, v string) error {
 }
 
 func (km *awsKeyManager) getData() {
-	secretValue, err := km.sm.GetSecretValue(&secretsmanager.GetSecretValueInput{SecretId: aws.String(km.secretID)})
+	input := &secretsmanager.GetSecretValueInput{SecretId: km.secretID}
+	secretValue, err := km.sm.GetSecretValue(input)
 	if err != nil {
 		log.Fatalf("could not get the secret value: %v", err)
 	}
@@ -49,10 +51,10 @@ func (km *awsKeyManager) getData() {
 
 // NewAWSKeyManager is a concrete implementation of keys.Manager which interacts with
 // AWS Secrets Manager.
-func NewAWSKeyManager(secretID string, sm *secretsmanager.SecretsManager) keys.Manager {
+func NewAWSKeyManager(secretID string, sm secretsmanageriface.SecretsManagerAPI) keys.Manager {
 	return &awsKeyManager{
 		sm:        sm,
-		secretID:  secretID,
+		secretID:  aws.String(secretID),
 		localData: make(map[string]string),
 	}
 }
