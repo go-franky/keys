@@ -39,12 +39,12 @@ func TestManager(t *testing.T) {
 	}
 }
 
-func TestCombine(t *testing.T) {
+func TestMultiManager(t *testing.T) {
 	defaultMgr := keys.NewKeyManager()
 	empty := &emptyMgr{}
 	all := []keys.Manager{defaultMgr, empty}
 
-	var tAll = keys.Combine(all...)
+	var tAll = keys.MultiManager(all...)
 
 	if k, ok := tAll.Lookup("Non-Existient"); k != "" || ok {
 		t.Errorf("expected a combined manager to be initialized empty for lookups, got %v - %v", k, ok)
@@ -74,7 +74,7 @@ func TestCombine(t *testing.T) {
 	}
 
 	// Reading any of the listed ones
-	tAll = keys.Combine(defaultMgr, &T1{})
+	tAll = keys.MultiManager(defaultMgr, &T1{})
 	if tAll.Get("Hello") != "World" {
 		t.Errorf("expected %v, got: %v", "World", tAll.Get("Hello"))
 	}
@@ -83,5 +83,43 @@ func TestCombine(t *testing.T) {
 	defaultMgr.Set("Hello", "This is my World")
 	if tAll.Get("Hello") != "This is my World" {
 		t.Errorf("expected %v, got: %v", "This is My World", tAll.Get("Hello"))
+	}
+}
+
+func TestMultiGetter(t *testing.T) {
+	defaultMgr := keys.NewKeyManager()
+	empty := &emptyMgr{}
+	all := []keys.Getter{defaultMgr, empty}
+
+	var tAll = keys.MultiGetter(all...)
+
+	if k := tAll.Get("Non-Exisitent"); k != "" {
+		t.Errorf("expected empty, got %v", k)
+	}
+
+	all = []keys.Getter{empty, &T1{}}
+	tAll = keys.MultiGetter(all...)
+
+	if k := tAll.Get("Hello"); k != "World" {
+		t.Errorf("expected %v, got %v", "World", k)
+	}
+}
+
+func TestMultiLookuper(t *testing.T) {
+	defaultMgr := keys.NewKeyManager()
+	empty := &emptyMgr{}
+	all := []keys.Lookuper{defaultMgr, empty}
+
+	var tAll = keys.MultiLookuper(all...)
+
+	if k, ok := tAll.Lookup("Non-Existient"); k != "" || ok {
+		t.Errorf("expected a combined manager to be initialized empty for lookups, got %v - %v", k, ok)
+	}
+
+	all = []keys.Lookuper{empty, &T1{}}
+	tAll = keys.MultiLookuper(all...)
+
+	if k, ok := tAll.Lookup("Hello"); k != "World" || !ok {
+		t.Errorf("expected a multi lookup to retur right value for key: %v, bool: %v; got key: %v, bool: %v", "World", true, k, ok)
 	}
 }

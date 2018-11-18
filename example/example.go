@@ -24,6 +24,6 @@ func main() {
 	}
 	sm := secretsmanager.New(sess)
 
-	keyManager := keys.Combine(os.NewFromOS(), awsMgr.NewAWSKeyManager(*secretID, sm))
+	keyManager := keys.MultiManager(os.NewFromOS(), awsMgr.NewAWSKeyManager(*secretID, sm))
 	fmt.Println(keyManager.Get("PASSWORD"))
 }
