@@ -3,6 +3,8 @@
 // It allows for keys to be searched from multiple source
 package keys
 
+import "sync"
+
 // Getter retrieves the value of the variable named by the key.
 // It returns the value, which will be empty if the variable is not present.
 // To distinguish between an empty value and an unset value, use Lookup.
@@ -35,22 +37,29 @@ type Manager interface {
 // of a Manager
 type KeyManager struct {
 	localData map[string]string
+	lock      sync.RWMutex
 }
 
 // Lookup see interface definition
 func (km *KeyManager) Lookup(key string) (string, bool) {
+	km.lock.RLock()
+	defer km.lock.RUnlock()
 	k, v := km.localData[key]
 	return k, v
 }
 
 // Get see interface definition
 func (km *KeyManager) Get(key string) string {
+	km.lock.RLock()
+	defer km.lock.RUnlock()
 	k, _ := km.Lookup(key)
 	return k
 }
 
 // Set see interface definition
 func (km *KeyManager) Set(key, value string) error {
+	km.lock.Lock()
+	defer km.lock.Unlock()
 	km.localData[key] = value
 	return nil
 }
@@ -77,10 +86,13 @@ func (km *cbGet) Get(key string) string {
 }
 
 type cbLook struct {
-	mgr []Lookuper
+	mgr  []Lookuper
+	lock sync.RWMutex
 }
 
 func (km *cbLook) Lookup(key string) (string, bool) {
+	km.lock.RLock()
+	defer km.lock.RUnlock()
 	for _, keym := range km.mgr {
 		if k, ok := keym.Lookup(key); ok {
 			return k, ok
@@ -92,14 +104,19 @@ func (km *cbLook) Lookup(key string) (string, bool) {
 type combinedManager struct {
 	localData map[string]string
 	mgr       []Manager
+	lock      sync.RWMutex
 }
 
 func (km *combinedManager) Get(key string) string {
+	km.lock.RLock()
+	defer km.lock.RUnlock()
 	k, _ := km.Lookup(key)
 	return k
 }
 
 func (km *combinedManager) Lookup(key string) (string, bool) {
+	km.lock.RLock()
+	defer km.lock.RUnlock()
 	if k, ok := km.localData[key]; ok {
 		return k, ok
 	}
@@ -112,6 +129,8 @@ func (km *combinedManager) Lookup(key string) (string, bool) {
 }
 
 func (km *combinedManager) Set(k, v string) error {
+	km.lock.Lock()
+	defer km.lock.Unlock()
 	km.localData[k] = v
 	return nil
 }
