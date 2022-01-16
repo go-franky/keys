@@ -41,3 +41,11 @@ jobs:
 
       - name: Test
         run: make test
+
+      - name: Tests with localstack
+        if: matrix.platform == 'ubuntu-latest'
+        env:
+          AWS_REGION: us-west-1
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+        run: make test_with_localstack

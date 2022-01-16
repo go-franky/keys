@@ -1,5 +1,11 @@
+GOTEST=go test -v -count=1 -cover
+
 test:
-	go test -count 1 -cover -v -race ./...
+	$(GOTEST) -race ./...
+
+test_with_localstack:
+	$(GOTEST) -tags=localstack \
+		github.com/go-franky/keys/aws
 
 vet:
 	go vet ./...
