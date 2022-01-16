@@ -1,4 +1,4 @@
-GOTEST=go test -v -count=1 -cover
+GOTEST=go test -v -count=1 -race -cover
 
 test:
 	$(GOTEST) -race ./...
