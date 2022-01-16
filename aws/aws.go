@@ -1,3 +1,7 @@
+// Package AWS allows for storing AWS secretsmanager's secret
+// into a local structure.
+// Note: this assumes the value of the secret is in the format
+// of a key value pair
 package aws
 
 import (
