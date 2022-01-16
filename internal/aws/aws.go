@@ -10,7 +10,7 @@ import (
 )
 
 func NewConfig(ctx context.Context, optFns ...func(*config.LoadOptions) error) (aws.Config, error) {
-	if os.Getenv("KEYS_DEBUG") == "true" {
+	if os.Getenv("KEYS_AWS_DEBUG") == "true" {
 		optFns = append(optFns, config.WithClientLogMode(aws.LogRequestWithBody|aws.LogResponseWithBody))
 		optFns = append(optFns, config.WithRetryer(func() aws.Retryer { return aws.NopRetryer{} }))
 	}
