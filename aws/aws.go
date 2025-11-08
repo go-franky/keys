@@ -7,6 +7,7 @@ package aws
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
 
@@ -15,14 +16,17 @@ import (
 )
 
 type awsKeyManager struct {
-	once      sync.Once
+	once      func() error
 	sm        *secretsmanager.Client
 	secretID  string
 	localData map[string]string
 }
 
 func (km *awsKeyManager) Lookup(key string) (string, bool) {
-	km.once.Do(km.getData(context.Background()))
+	if err := km.once(); err != nil {
+		log.Fatal(err)
+	}
+
 	key, ok := km.localData[key]
 	return key, ok
 }
@@ -37,28 +41,32 @@ func (km *awsKeyManager) Set(k, v string) error {
 	return nil
 }
 
-func (km *awsKeyManager) getData(ctx context.Context) func() {
-	return func() {
-		secretValue, err := km.sm.GetSecretValue(ctx, &secretsmanager.GetSecretValueInput{SecretId: &km.secretID})
-		if err != nil {
-			log.Fatalf("could not get the secret value: %v", err)
-		}
-		var keys map[string]string
-		if err := json.Unmarshal([]byte(*secretValue.SecretString), &keys); err != nil {
-			log.Fatalf("could not unmarshal: %v", err)
-		}
-		for k, v := range keys {
-			km.Set(k, v)
-		}
-	}
-}
-
 // NewAWSKeyManager is a concrete implementation of keys.Manager which interacts with
 // AWS Secrets Manager.
 func NewAWSKeyManager(secretID string, sm *secretsmanager.Client) keys.Manager {
-	return &awsKeyManager{
+	km := &awsKeyManager{
 		sm:        sm,
 		secretID:  secretID,
 		localData: make(map[string]string),
 	}
+	km.once = sync.OnceValue(km.loadData)
+
+	return km
+}
+
+func (km *awsKeyManager) loadData() error {
+	secretValue, err := km.sm.GetSecretValue(context.Background(), &secretsmanager.GetSecretValueInput{SecretId: &km.secretID})
+	if err != nil {
+		return fmt.Errorf("could not get the secret value: %w", err)
+	}
+	var keys map[string]string
+	if err := json.Unmarshal([]byte(*secretValue.SecretString), &keys); err != nil {
+		return fmt.Errorf("could not unmarshal: %w", err)
+	}
+	for k, v := range keys {
+		if err := km.Set(k, v); err != nil {
+			return fmt.Errorf("could not set %v: %w", k, err)
+		}
+	}
+	return nil
 }
