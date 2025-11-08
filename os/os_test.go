@@ -13,7 +13,7 @@ func TestOSMgr(t *testing.T) {
 	if osMgr.Get("HOME") != os.Getenv("HOME") {
 		t.Errorf("expected mgr: %v to eql env %v", osMgr.Get("HOME"), os.Getenv("HOME"))
 	}
-	osMgr.Set("Hello", "World")
+	_ = osMgr.Set("Hello", "World")
 	if k := osMgr.Get("Hello"); k != "World" {
 		t.Errorf("expected %v, got %v", "World", k)
 	}

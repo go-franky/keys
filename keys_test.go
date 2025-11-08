@@ -28,7 +28,7 @@ func TestManager(t *testing.T) {
 		t.Errorf("expected a manager to be initialized empty for lookups, got %v - %v", k, ok)
 	}
 
-	km.Set("Hello", "World")
+	_ = km.Set("Hello", "World")
 
 	if k := km.Get("Hello"); k != "World" {
 		t.Errorf("expected %v, got %v", "World", k)
@@ -54,7 +54,7 @@ func TestMultiManager(t *testing.T) {
 	}
 
 	// Setting tAll does not change the others
-	tAll.Set("Hey", "You")
+	_ = tAll.Set("Hey", "You")
 
 	if k, ok := tAll.Lookup("Hey"); k != "You" || !ok {
 		t.Errorf("expected a combined manager to be initialized empty for lookups, got %v - %v", "You", ok)
@@ -80,7 +80,7 @@ func TestMultiManager(t *testing.T) {
 	}
 
 	// Check the order
-	defaultMgr.Set("Hello", "This is my World")
+	_ = defaultMgr.Set("Hello", "This is my World")
 	if tAll.Get("Hello") != "This is my World" {
 		t.Errorf("expected %v, got: %v", "This is My World", tAll.Get("Hello"))
 	}
