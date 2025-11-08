@@ -17,8 +17,6 @@ import (
 
 type awsKeyManager struct {
 	once      func() error
-	sm        *secretsmanager.Client
-	secretID  string
 	localData map[string]string
 }
 
@@ -41,32 +39,36 @@ func (km *awsKeyManager) Set(k, v string) error {
 	return nil
 }
 
+type getSecretValueer interface {
+	GetSecretValue(ctx context.Context, params *secretsmanager.GetSecretValueInput, optFns ...func(*secretsmanager.Options)) (*secretsmanager.GetSecretValueOutput, error)
+}
+
 // NewAWSKeyManager is a concrete implementation of keys.Manager which interacts with
 // AWS Secrets Manager.
-func NewAWSKeyManager(secretID string, sm *secretsmanager.Client) keys.Manager {
+func NewAWSKeyManager(secretID string, sm getSecretValueer) keys.Manager {
 	km := &awsKeyManager{
-		sm:        sm,
-		secretID:  secretID,
 		localData: make(map[string]string),
 	}
-	km.once = sync.OnceValue(km.loadData)
+	km.once = sync.OnceValue(km.loadData(secretID, sm))
 
 	return km
 }
 
-func (km *awsKeyManager) loadData() error {
-	secretValue, err := km.sm.GetSecretValue(context.Background(), &secretsmanager.GetSecretValueInput{SecretId: &km.secretID})
-	if err != nil {
-		return fmt.Errorf("could not get the secret value: %w", err)
-	}
-	var keys map[string]string
-	if err := json.Unmarshal([]byte(*secretValue.SecretString), &keys); err != nil {
-		return fmt.Errorf("could not unmarshal: %w", err)
-	}
-	for k, v := range keys {
-		if err := km.Set(k, v); err != nil {
-			return fmt.Errorf("could not set %v: %w", k, err)
+func (km *awsKeyManager) loadData(secret string, sm getSecretValueer) func() error {
+	return func() error {
+		secretValue, err := sm.GetSecretValue(context.Background(), &secretsmanager.GetSecretValueInput{SecretId: &secret})
+		if err != nil {
+			return fmt.Errorf("could not get the secret value: %w", err)
 		}
+		var keys map[string]string
+		if err := json.Unmarshal([]byte(*secretValue.SecretString), &keys); err != nil {
+			return fmt.Errorf("could not unmarshal: %w", err)
+		}
+		for k, v := range keys {
+			if err := km.Set(k, v); err != nil {
+				return fmt.Errorf("could not set %v: %w", k, err)
+			}
+		}
+		return nil
 	}
-	return nil
 }
