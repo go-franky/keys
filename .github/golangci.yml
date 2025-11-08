@@ -30,6 +30,11 @@ linters:
     - tparallel # Detects inappropriate use of t.Parallel()
     - unconvert # Detect unnecessary type conversions
     - unparam # Detect unused function parameters
+  exclusions:
+    rules:
+      - path: '/keys_test.go'
+        linters:
+          - goconst
   settings:
     errcheck:
       exclude-functions:
@@ -37,8 +42,6 @@ linters:
     revive:
       rules:
         - name: exported
-    exclusions:
-      - path: (.+)_test.go
     sloglint:
       attr-only: true
       no-global: all
