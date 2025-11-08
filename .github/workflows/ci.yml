@@ -7,6 +7,26 @@ on:
 name: Run tests
 
 jobs:
+  lint:
+    name: Linting Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.revision }}
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Lint with Golangci Lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          args: --timeout=5m --config .github/golangci.yml
+
   test:
     strategy:
       matrix:
@@ -27,14 +47,6 @@ jobs:
         run: |
           go mod download
           go mod tidy -v
-
-      - name: Vet
-        if: matrix.platform == 'ubuntu-latest'
-        run: make vet
-
-      - name: fmt
-        if: matrix.platform == 'ubuntu-latest'
-        run: make fmt
 
       - name: Test
         run: make test
