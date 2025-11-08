@@ -14,6 +14,7 @@ import (
 	"github.com/ory/dockertest/v3/docker"
 )
 
+// Setup starts a LocalStack container and sets the KEYS_AWS_ENDPOINT
 func Setup() (func(), error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
@@ -40,9 +41,14 @@ func Setup() (func(), error) {
 	}
 
 	hostAndPort := resource.GetHostPort("4566/tcp")
-	os.Setenv("KEYS_AWS_ENDPOINT", fmt.Sprintf("http://%s", hostAndPort))
+	if err := os.Setenv("KEYS_AWS_ENDPOINT", fmt.Sprintf("http://%s", hostAndPort)); err != nil {
+		return close, fmt.Errorf("could not set env: %w", err)
+	}
 
-	resource.Expire(60)
+	expirationDuration := 60 // seconds
+	if err := resource.Expire(uint(expirationDuration)); err != nil {
+		return close, fmt.Errorf("could not set resource expiration: %w", err)
+	}
 	pool.MaxWait = 1 * time.Minute
 
 	if err := pool.Retry(func() error {
