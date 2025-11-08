@@ -1,3 +1,5 @@
+//go:build localstack
+
 package aws_test
 
 import (
