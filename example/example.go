@@ -14,8 +14,8 @@ import (
 )
 
 func main() {
-	var secretID = flag.String("secret-id", "", "AWS Secret Manager ID")
-	var region = flag.String("region", "us-west-1", "AWS Region for secrets")
+	secretID := flag.String("secret-id", "", "AWS Secret Manager ID")
+	region := flag.String("region", "us-west-1", "AWS Region for secrets")
 	flag.Parse()
 
 	cfg := aws.MustNewConfig(context.Background(), config.WithRegion(*region))

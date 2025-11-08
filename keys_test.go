@@ -44,7 +44,7 @@ func TestMultiManager(t *testing.T) {
 	empty := &emptyMgr{}
 	all := []keys.Manager{defaultMgr, empty}
 
-	var tAll = keys.MultiManager(all...)
+	tAll := keys.MultiManager(all...)
 
 	if k, ok := tAll.Lookup("Non-Existient"); k != "" || ok {
 		t.Errorf("expected a combined manager to be initialized empty for lookups, got %v - %v", k, ok)
@@ -91,7 +91,7 @@ func TestMultiGetter(t *testing.T) {
 	empty := &emptyMgr{}
 	all := []keys.Getter{defaultMgr, empty}
 
-	var tAll = keys.MultiGetter(all...)
+	tAll := keys.MultiGetter(all...)
 
 	if k := tAll.Get("Non-Exisitent"); k != "" {
 		t.Errorf("expected empty, got %v", k)
@@ -110,7 +110,7 @@ func TestMultiLookuper(t *testing.T) {
 	empty := &emptyMgr{}
 	all := []keys.Lookuper{defaultMgr, empty}
 
-	var tAll = keys.MultiLookuper(all...)
+	tAll := keys.MultiLookuper(all...)
 
 	if k, ok := tAll.Lookup("Non-Existient"); k != "" || ok {
 		t.Errorf("expected a combined manager to be initialized empty for lookups, got %v - %v", k, ok)

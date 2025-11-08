@@ -50,7 +50,6 @@ func (km *awsKeyManager) getData(ctx context.Context) func() {
 		for k, v := range keys {
 			km.Set(k, v)
 		}
-
 	}
 }
 
