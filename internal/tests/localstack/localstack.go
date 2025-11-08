@@ -50,7 +50,10 @@ func Setup() (func(), error) {
 			context.Background(),
 			config.WithRetryer(func() aws.Retryer { return aws.NopRetryer{} }),
 		)
-		s := sts.NewFromConfig(cfg)
+		s := sts.NewFromConfig(
+			cfg,
+			sts.WithEndpointResolverV2(internalAWS.NewCustomResolver[sts.EndpointParameters](os.Getenv("KEYS_AWS_ENDPOINT"))),
+		)
 		_, err = s.GetCallerIdentity(context.Background(), nil)
 		if err != nil {
 			return err

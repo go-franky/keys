@@ -1,10 +1,9 @@
-//go:build localstack
-
 package aws_test
 
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
@@ -22,7 +21,12 @@ func TestKeys(t *testing.T) {
 
 	secretID := "anything"
 
-	s := secretsmanager.NewFromConfig(aws.MustNewConfig(context.Background()))
+	s := secretsmanager.NewFromConfig(
+		aws.MustNewConfig(context.Background()),
+		secretsmanager.WithEndpointResolverV2(
+			aws.NewCustomResolver[secretsmanager.EndpointParameters](os.Getenv("KEYS_AWS_ENDPOINT")),
+		),
+	)
 
 	data := struct {
 		Hello string `json:"HELLO"`
