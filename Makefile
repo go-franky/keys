@@ -1,6 +1,7 @@
 GO=go
 VET_REPORT = vet.report
 TEST_REPORT = tests.xml
+GOLANGCILINT?=golangci-lint
 
 .PHONY: default
 default: help
@@ -20,6 +21,10 @@ help: ## Show this help
 	@echo
 	@echo "Targets:"
 	@grep -h '\s##\s' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?\#\# "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: lint
+lint: ## Run the linter
+	$(GOLANGCILINT) run --config .github/golangci.yml -v
 
 .PHONY: test
 test: ## Run the test suite

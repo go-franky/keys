@@ -1,0 +1,59 @@
+version: 2
+
+output:
+  formats:
+    text:
+      path: stdout
+      color: true
+
+linters:
+  enable:
+    # Default linters
+    - errcheck # Detect unchecked errors
+    - govet # Reports suspicious constructs
+    - ineffassign # Detects unused variable assignments
+    - staticcheck # go vet on steroids
+    - unused # Detect unused constants, variables, functions and types
+    - revive # Check for documentation of exported functions
+    - sloglint # Linting good use of slog
+
+    # Additional linters
+    - bodyclose # Check whether HTTP response bodies are closed
+    - dupl # Detect duplicate code
+    - err113 # Enforce standard error handling practices
+    - errorlint # Detect mal formed wrapped errors
+    - goconst # Detect repeated values that can be made constants
+    - gocyclo # Detect cyclomatic complexity
+    - misspell # Fix spelling errors
+    - mnd # Magic number detection
+    - nakedret # Detect naked returns
+    - tparallel # Detects inappropriate use of t.Parallel()
+    - unconvert # Detect unnecessary type conversions
+    - unparam # Detect unused function parameters
+  settings:
+    errcheck:
+      exclude-functions:
+        - fmt.Fprintln
+    revive:
+      rules:
+        - name: exported
+    exclusions:
+      - path: (.+)_test.go
+    sloglint:
+      attr-only: true
+      no-global: all
+      static-msg: true
+      msg-style: lowercased
+      key-naming-case: snake
+      forbidden-keys:
+        - time
+        - level
+        - msg
+        - source
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - goimports
+    - gofumpt
