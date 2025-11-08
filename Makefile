@@ -1,5 +1,6 @@
 GO=go
 VET_REPORT = vet.report
+TEST_REPORT = tests.xml
 
 .PHONY: default
 default: help
