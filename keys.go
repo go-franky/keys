@@ -139,9 +139,7 @@ func (km *combinedManager) Set(k, v string) error {
 // the value of the first one that is not a blank string
 func MultiGetter(km ...Getter) Getter {
 	res := &cbGet{}
-	for _, k := range km {
-		res.mgr = append(res.mgr, k)
-	}
+	res.mgr = append(res.mgr, km...)
 	return res
 }
 
@@ -149,9 +147,7 @@ func MultiGetter(km ...Getter) Getter {
 // the value of any
 func MultiLookuper(km ...Lookuper) Lookuper {
 	res := &cbLook{}
-	for _, k := range km {
-		res.mgr = append(res.mgr, k)
-	}
+	res.mgr = append(res.mgr, km...)
 	return res
 }
 
@@ -161,8 +157,6 @@ func MultiManager(km ...Manager) Manager {
 	res := &combinedManager{
 		localData: make(map[string]string),
 	}
-	for _, k := range km {
-		res.mgr = append(res.mgr, k)
-	}
+	res.mgr = append(res.mgr, km...)
 	return res
 }
