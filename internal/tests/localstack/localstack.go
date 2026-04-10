@@ -24,7 +24,7 @@ func Setup() (func(), error) {
 	// pulls an image, creates a container based on it and runs it
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Repository: "localstack/localstack",
-		Tag:        "latest",
+		Tag:        "community-archive",
 	}, func(config *docker.HostConfig) {
 		// set AutoRemove to true so that stopped container goes away by itself
 		config.AutoRemove = true
