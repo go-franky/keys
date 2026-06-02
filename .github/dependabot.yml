@@ -5,6 +5,10 @@ updates:
     directory: '/'
     schedule:
       interval: monthly
+    groups:
+      aws:
+        patterns:
+          - "github.com/aws/*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
